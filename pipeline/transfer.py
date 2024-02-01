@@ -140,7 +140,7 @@ def transfer(args):
     err = { spin_pair:
         pcls_mat_dict[spin_pair]["filtered"]
         - np.einsum('pql,imql->impl',
-                    trans,
+                    trans[spin_pair],
                     pcls_mat_dict[spin_pair]["unfiltered"])
         for spin_pair in spin_pairs
     }
