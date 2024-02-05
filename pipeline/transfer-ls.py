@@ -64,41 +64,97 @@ def transfer(args):
     meta.timer.stop("Load mode-coupling matrices", verbose=True)
 
     meta.timer.start("Inverse the unfiltered pcls matrix")
-    # Is there a better way to formulate this ?
+    ## Is there a better way to formulate this ?
+    #cct_invs = {
+    #    spin_pair: np.transpose(
+    #        np.linalg.inv(
+    #            np.transpose(
+    #                np.einsum('jil,jkl->ikl',
+    #                          pcls_mat_unfiltered_mean[spin_pair],
+    #                          pcls_mat_unfiltered_mean[spin_pair]),
+    #                axes=[2, 0, 1]
+    #            )
+    #        ), axes=[1, 2, 0]
+    #    ) for spin_pair in spin_pairs
+    #}
+
+    # each simulation and each pure mode combination as one sample
     cct_invs = {
         spin_pair: np.transpose(
             np.linalg.inv(
                 np.transpose(
-                    np.einsum('jil,jkl->ikl',
-                              pcls_mat_unfiltered_mean[spin_pair],
-                              pcls_mat_unfiltered_mean[spin_pair]),
-                    axes=[2, 0, 1]
-                )
-            ), axes=[1, 2, 0]
-        ) for spin_pair in spin_pairs
+                    np.einsum('impl,imql->pql',
+                            pcls_mat_dict[spin_pair]["unfiltered"],
+                            pcls_mat_dict[spin_pair]["unfiltered"]),
+                    axes=[2, 0, 1])
+                ),
+            axes=[1, 2, 0])
+        for spin_pair in spin_pairs
     }
+
+    # each pure mode combination as one sample
+    #cct_invs = {
+    #    spin_pair: np.transpose(
+    #        np.linalg.inv(
+    #            np.transpose(
+    #                np.einsum('impl,imql->ipql',
+    #                        pcls_mat_dict[spin_pair]["unfiltered"],
+    #                        pcls_mat_dict[spin_pair]["unfiltered"]),
+    #                axes=[0, 3, 1, 2])
+    #            ),
+    #        axes=[0, 2, 3, 1])
+    #    for spin_pair in spin_pairs
+    #}
     meta.timer.stop("Inverse the unfiltered pcls matrix", verbose=True)
 
     meta.timer.start("Compute transfer function")
-    # Same comment as above
+    ## Same comment as above
+    #trans = {
+    #    spin_pair: np.einsum('ijl,jkl->kil', cct_invs[spin_pair],
+    #                         np.einsum('jil,jkl->ikl',
+    #                                   pcls_mat_unfiltered_mean[spin_pair],
+    #                                   pcls_mat_filtered_mean[spin_pair]))
+    #    for spin_pair in spin_pairs
+    #}
     trans = {
-        spin_pair: np.einsum('ijl,jkl->kil', cct_invs[spin_pair],
-                             np.einsum('jil,jkl->ikl',
-                                       pcls_mat_unfiltered_mean[spin_pair],
-                                       pcls_mat_filtered_mean[spin_pair]))
+        spin_pair: np.einsum('qrl,rpl->pql',
+                             cct_invs[spin_pair],
+                             np.einsum('impl,imql->pql',
+                                        pcls_mat_dict[spin_pair]["unfiltered"],
+                                        pcls_mat_dict[spin_pair]["filtered"]))
         for spin_pair in spin_pairs
     }
     meta.timer.stop("Compute transfer function", verbose=True)
 
-    # Same comment as above
-    etrans = {
-        spin_pair: np.std(
-            np.array([np.einsum('ijl,jkl->kil', cct_invs[spin_pair],
-                                np.einsum('jil,jkl->ikl',
-                                          pcls_mat_unfiltered_mean[spin_pair],
-                                          clf))
-                      for clf in pcls_mat_dict[spin_pair]["filtered"]]),
-            axis=0)
+    ## Same comment as above
+    #etrans = {
+    #    spin_pair: np.std(
+    #        np.array([np.einsum('ijl,jkl->kil', cct_invs[spin_pair],
+    #                            np.einsum('jil,jkl->ikl',
+    #                                      pcls_mat_unfiltered_mean[spin_pair],
+    #                                      clf))
+    #                  for clf in pcls_mat_dict[spin_pair]["filtered"]]),
+    #        axis=0)
+    #    for spin_pair in spin_pairs}
+    # Calculate standard error of transfer function
+    err = { spin_pair:
+        pcls_mat_dict[spin_pair]["filtered"]
+        - np.einsum('pql,imql->impl',
+                    trans[spin_pair],
+                    pcls_mat_dict[spin_pair]["unfiltered"])
+        for spin_pair in spin_pairs
+    }
+    s2 = { spin_pair:
+        1/(meta.tf_est_num_sims-spin_comb)
+        * np.einsum('impl,impl->pl',
+                    err[spin_pair],
+                    err[spin_pair])
+        for spin_pair,spin_comb in zip(spin_pairs,[1,2,4])
+    }
+    etrans = { spin_pair:
+        np.sqrt( np.einsum('pl,qql->pql',
+                           s2[spin_pair],
+                           cct_invs[spin_pair]))
         for spin_pair in spin_pairs}
 
     np.savez(
