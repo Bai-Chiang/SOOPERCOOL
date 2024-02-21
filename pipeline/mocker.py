@@ -66,14 +66,20 @@ def mocker(args):
     Nsims = meta.num_sims if args.sims else 1
 
     for id_sim in range(Nsims):
-        alms_T, alms_E, alms_B = hp.synalm([ps_th[k] for k in hp_ordering],
-                                           lmax=lmax_sim)
-        if meta.null_e_modes:
-            cmb_map = hp.alm2map([alms_T, alms_E*0, alms_B],
-                                 meta.nside, lmax=lmax_sim)
+        if args.sims or not meta.use_custom_signal:
+            alms_T, alms_E, alms_B = hp.synalm([ps_th[k] for k in hp_ordering],
+                                               lmax=lmax_sim)
+            if meta.null_e_modes:
+                cmb_map = hp.alm2map([alms_T, alms_E*0, alms_B],
+                                     meta.nside, lmax=lmax_sim)
+            else:
+                cmb_map = hp.alm2map([alms_T, alms_E, alms_B],
+                                     meta.nside, lmax=lmax_sim)
         else:
-            cmb_map = hp.alm2map([alms_T, alms_E, alms_B],
-                                 meta.nside, lmax=lmax_sim)
+            cmb_map = hp.ud_grade(
+                hp.read_map(meta.sim_pars["total_signal_path"], field=[0,1,2]),
+                nside_out=meta.nside,
+            )
 
         for map_set in meta.map_sets_list:
 
