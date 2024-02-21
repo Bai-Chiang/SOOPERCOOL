@@ -96,6 +96,9 @@ sim_pars:
   mock_nsrcs: 80
   mock_srcs_hole_radius: 40  
 
+  # Custom total signal map for data
+  total_signal_path: "signal-out/signal-total.fits"
+
 ## Filtering transfer function related parameters
 tf_settings:
   filtering_type: "m_filterer"  # "m_filterer" or "toast"
