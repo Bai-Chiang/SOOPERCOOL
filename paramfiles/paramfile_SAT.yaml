@@ -40,11 +40,15 @@ map_sets:
     n_splits: 3          # Number of splits
     freq_tag: 93         # Freq. tag (e.g. useful to coadd freqs)
     exp_tag: "SAT1"      # Experiment tag (useful to get noise-bias free cross-split spectra)
+    instrument: "SAT1"   # Name of the instrument (--telescope) used in TOAST if `toast_sim_noise` is True.
+    band: "SAT_f090"     # Name of the frequency (--band) used in TOAST if `toast_sim_noise` is True.
   SAT1_f145:
     file_root: "cmb_sat1_f145"
     n_splits: 3
     freq_tag: 145
     exp_tag: "SAT1"
+    instrument: "SAT1"
+    band: "SAT_f150"
 
 ####################
 # Masking metadata #
