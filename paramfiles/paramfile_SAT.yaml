@@ -112,6 +112,7 @@ filtering:
     # `slurm_autosubmit` set to True to auto-submit generated sbatch scripts.
     # Set to False would generate scripts but not submitted, give you a chance to check generated scripts.
     slurm_autosubmit: False
+    sim_noise: False                                     # If True, simulate noise with TOAST
 
 ## Filtering transfer function related parameters
 tf_settings:
