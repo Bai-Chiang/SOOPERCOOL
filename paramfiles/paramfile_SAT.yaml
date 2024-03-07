@@ -96,14 +96,11 @@ sim_pars:
   mock_nsrcs: 80
   mock_srcs_hole_radius: 40  
 
-  ## Uncomment to use custom total signal map for data
-  #total_signal_path:
-  #  # freq: path
-  #  # math freq_tag in map_set
-  #  f93: "signals/total_f93.fits"
-  #  f145: "signals/total_f145.fits"
-  ## Use TOAST simulate atmosphere noise for data
-  #toast_sim_noise: True
+  custom_signal_path:
+    # freq: path
+    # math freq_tag in map_set
+    #f93: "signals/total_f93.fits"
+    #f145: "signals/total_f145.fits"
 
 ## Filtering transfer function related parameters
 tf_settings:

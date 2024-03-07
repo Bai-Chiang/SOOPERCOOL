@@ -62,7 +62,7 @@ class BBmeta(object):
         self.use_input_nhits = (self.masks["input_nhits_path"] is not None)
 
         # Determine if custom total signal map exists
-        self.use_custom_signal = (self.sim_pars["total_signal_path"] is not None)
+        self.use_custom_signal = (self.sim_pars["custom_signal_path"] is not None)
 
         # Initialize masks file_names
         for mask_type in ["binary_mask", "galactic_mask", "point_source_mask",

@@ -76,11 +76,6 @@ def mocker(args):
             else:
                 cmb_map = hp.alm2map([alms_T, alms_E, alms_B],
                                      meta.nside, lmax=lmax_sim)
-        #else:
-        #    cmb_map = hp.ud_grade(
-        #        hp.read_map(meta.sim_pars["total_signal_path"], field=[0,1,2]),
-        #        nside_out=meta.nside,
-        #    )
 
         for map_set in meta.map_sets_list:
 
@@ -89,7 +84,9 @@ def mocker(args):
             if meta.use_custom_signal:
                 # Use custom signal map which depends on freq
                 cmb_map = hp.ud_grade(
-                    hp.read_map(meta.sim_pars["total_signal_path"]['f'+freq_tag], field=[0,1,2]),
+                    hp.read_map(
+                        meta.sim_pars["custom_signal_path"]['f'+freq_tag],
+                        field=[0,1,2]),
                     nside_out=meta.nside,
                 )
             cmb_map_beamed = hp.sphtfunc.smoothing(
