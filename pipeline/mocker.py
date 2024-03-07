@@ -67,6 +67,7 @@ def mocker(args):
 
     for id_sim in range(Nsims):
         if args.sims or not meta.use_custom_signal:
+            # Simulation or not using custom signal, generate CMB map only
             alms_T, alms_E, alms_B = hp.synalm([ps_th[k] for k in hp_ordering],
                                                lmax=lmax_sim)
             if meta.null_e_modes:
@@ -75,16 +76,22 @@ def mocker(args):
             else:
                 cmb_map = hp.alm2map([alms_T, alms_E, alms_B],
                                      meta.nside, lmax=lmax_sim)
-        else:
-            cmb_map = hp.ud_grade(
-                hp.read_map(meta.sim_pars["total_signal_path"], field=[0,1,2]),
-                nside_out=meta.nside,
-            )
+        #else:
+        #    cmb_map = hp.ud_grade(
+        #        hp.read_map(meta.sim_pars["total_signal_path"], field=[0,1,2]),
+        #        nside_out=meta.nside,
+        #    )
 
         for map_set in meta.map_sets_list:
 
             meta.timer.start(f"Generate map set {map_set} split maps")
             freq_tag = meta.freq_tag_from_map_set(map_set)
+            if not args.sims and meta.use_custom_signal:
+                # This is data, and use custom signal map which depends on freq
+                cmb_map = hp.ud_grade(
+                    hp.read_map(meta.sim_pars["total_signal_path"]['f'+freq_tag], field=[0,1,2]),
+                    nside_out=meta.nside,
+                )
             cmb_map_beamed = hp.sphtfunc.smoothing(
                 cmb_map, fwhm=np.deg2rad(beam_arcmin[freq_tag] / 60))
 
