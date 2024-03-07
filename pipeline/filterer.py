@@ -96,7 +96,8 @@ def filter(args):
                             .format(str(Path(map_file).name))
                     kwargs = {"instrument": meta.toast['tf_instrument'],
                               "band": meta.toast['tf_band'],
-                              "sbatch_job_name": sbatch_job_name}
+                              "sbatch_job_name": sbatch_job_name,
+                              "sim_noise": meta.toast['sim_noise']}
                 else:
                     kwargs = {}
                 filter_map(map, map_file, mask, kwargs)
