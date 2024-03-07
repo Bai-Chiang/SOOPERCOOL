@@ -85,14 +85,18 @@ def mocker(args):
             n_splits = meta.n_splits_from_map_set(map_set)
             file_root = meta.file_root_from_map_set(map_set)
             for id_split in range(n_splits):
-                noise_map = generate_noise_map(
-                    nlth_dict["T"][freq_tag],
-                    nlth_dict["P"][freq_tag],
-                    hitmap,
-                    n_splits,
-                    is_anisotropic=meta.anisotropic_noise
-                )
-                split_map = cmb_map_beamed + noise_map
+                if (meta.filtering_type != 'toast'
+                        or not meta.toast['sim_noise']):
+                    noise_map = generate_noise_map(
+                        nlth_dict["T"][freq_tag],
+                        nlth_dict["P"][freq_tag],
+                        hitmap,
+                        n_splits,
+                        is_anisotropic=meta.anisotropic_noise
+                    )
+                    split_map = cmb_map_beamed + noise_map
+                else:
+                    split_map = cmb_map_beamed
 
                 split_map *= binary_mask
 
